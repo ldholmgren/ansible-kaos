@@ -1,0 +1,12 @@
+---
+- name: Install KDE Plasma
+  ansible.builtin.pacman:
+    name: "{{ kde_packages }}"
+    state: present
+  when: install_kde | default(false)
+
+- name: Enable SDDM display manager
+  ansible.builtin.systemd:
+    name: sddm
+    enabled: true
+  when: install_kde | default(false)

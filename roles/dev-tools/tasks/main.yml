@@ -1,0 +1,78 @@
+---
+- name: Install development packages
+  ansible.builtin.pacman:
+    name: "{{ dev_packages }}"
+    state: present
+
+- name: Install container tools
+  ansible.builtin.pacman:
+    name:
+      - podman
+      - distrobox
+      - buildah
+      - skopeo
+    state: present
+
+- name: Enable podman socket for rootless containers
+  ansible.builtin.systemd:
+    name: podman.socket
+    enabled: true
+    scope: user
+  become: true
+  become_user: "{{ username }}"
+
+- name: Check if Nix is installed
+  ansible.builtin.stat:
+    path: /nix
+  register: nix_dir
+
+- name: Install Nix (daemon mode)
+  when: not nix_dir.stat.exists
+  block:
+    - name: Download Nix installer
+      ansible.builtin.get_url:
+        url: https://nixos.org/nix/install
+        dest: /tmp/nix-install.sh
+        mode: "0755"
+
+    - name: Run Nix installer (daemon mode)
+      ansible.builtin.command: /tmp/nix-install.sh --daemon --yes
+      changed_when: true
+
+    - name: Clean up Nix installer
+      ansible.builtin.file:
+        path: /tmp/nix-install.sh
+        state: absent
+
+- name: Configure Nix (enable flakes + nix-command)
+  ansible.builtin.copy:
+    content: |
+      # {{ ansible_managed }}
+      experimental-features = nix-command flakes
+      trusted-users = root {{ username }}
+    dest: /etc/nix/nix.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart nix-daemon
+
+- name: Enable nix-daemon service
+  ansible.builtin.systemd:
+    name: nix-daemon
+    enabled: true
+    state: started
+
+- name: Install nix-direnv
+  kewlfft.aur.aur:
+    name: nix-direnv
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+
+- name: Install Node.js
+  ansible.builtin.pacman:
+    name:
+      - nodejs
+      - npm
+    state: present

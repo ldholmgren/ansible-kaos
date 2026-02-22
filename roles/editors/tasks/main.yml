@@ -1,0 +1,13 @@
+---
+- name: Install Zed editor
+  ansible.builtin.pacman:
+    name: zed
+    state: present
+
+- name: Install VS Code
+  kewlfft.aur.aur:
+    name: visual-studio-code-bin
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"

@@ -1,0 +1,17 @@
+---
+gpu_packages:
+  - mesa
+  - lib32-mesa
+  - vulkan-radeon
+  - lib32-vulkan-radeon
+  - libva-mesa-driver
+  - lib32-libva-mesa-driver
+  - mesa-vdpau
+  - lib32-mesa-vdpau
+  - vulkan-tools
+  - clinfo
+
+rocm_packages:
+  - rocm-hip-sdk
+  - rocminfo
+  - rocm-smi-lib

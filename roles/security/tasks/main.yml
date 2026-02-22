@@ -1,0 +1,86 @@
+---
+- name: Install security packages
+  ansible.builtin.pacman:
+    name:
+      - bitwarden
+      - openssh
+      - gnupg
+      - pinentry
+    state: present
+
+- name: Install Bitwarden CLI
+  kewlfft.aur.aur:
+    name: bitwarden-cli
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+
+- name: Ensure SSH directory exists
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.ssh"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0700"
+
+- name: Generate SSH key if not present
+  community.crypto.openssh_keypair:
+    path: "/home/{{ username }}/.ssh/id_ed25519"
+    type: ed25519
+    comment: "{{ username }}@{{ ansible_hostname }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+  become: true
+  become_user: "{{ username }}"
+  register: ssh_key
+
+- name: Display SSH public key
+  ansible.builtin.debug:
+    msg: "SSH public key: {{ ssh_key.public_key }}"
+  when: ssh_key.changed
+
+- name: Configure ssh-agent systemd user service
+  ansible.builtin.template:
+    src: ssh-agent.service.j2
+    dest: "/home/{{ username }}/.config/systemd/user/ssh-agent.service"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+
+- name: Ensure systemd user directory exists
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.config/systemd/user"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0755"
+
+- name: Enable ssh-agent user service
+  ansible.builtin.systemd:
+    name: ssh-agent
+    enabled: true
+    state: started
+    scope: user
+  become: true
+  become_user: "{{ username }}"
+
+- name: Configure GPG agent
+  ansible.builtin.copy:
+    content: |
+      default-cache-ttl 3600
+      max-cache-ttl 86400
+      pinentry-program /usr/bin/pinentry-gnome3
+      enable-ssh-support
+    dest: "/home/{{ username }}/.gnupg/gpg-agent.conf"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0600"
+
+- name: Ensure GPG directory exists
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.gnupg"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0700"

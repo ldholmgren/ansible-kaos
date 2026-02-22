@@ -1,0 +1,47 @@
+---
+# site.yml - Master playbook for CachyOS provisioning
+# Usage:
+#   ansible-playbook playbooks/site.yml                     # Full provision
+#   ansible-playbook playbooks/site.yml --tags base         # Just base
+#   ansible-playbook playbooks/site.yml --tags niri         # Desktop only
+#   ansible-playbook playbooks/site.yml --tags kde -e install_kde=true
+
+- name: Provision CachyOS workstation
+  hosts: localhost
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: base
+      tags: [base]
+
+    - role: hardware
+      tags: [hardware]
+
+    - role: btrfs
+      tags: [btrfs]
+
+    - role: desktop-niri
+      tags: [niri]
+
+    - role: desktop-kde
+      tags: [kde]
+      when: install_kde | default(false)
+
+    - role: browsers
+      tags: [browsers]
+
+    - role: editors
+      tags: [editors]
+
+    - role: dev-tools
+      tags: [dev-tools]
+
+    - role: ai-tools
+      tags: [ai-tools]
+
+    - role: security
+      tags: [security]
+
+    - role: chezmoi
+      tags: [chezmoi]

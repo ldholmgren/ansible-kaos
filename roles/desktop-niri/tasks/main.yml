@@ -1,0 +1,53 @@
+---
+- name: Install Niri compositor
+  ansible.builtin.pacman:
+    name:
+      - niri
+      - xwayland-satellite
+    state: present
+
+- name: Install DankMaterialShell
+  kewlfft.aur.aur:
+    name: dankmaterialshell
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+
+- name: Install XDG portals
+  ansible.builtin.pacman:
+    name:
+      - xdg-desktop-portal-gnome
+      - xdg-desktop-portal-gtk
+      - xdg-desktop-portal
+    state: present
+
+- name: Install Wayland utilities
+  ansible.builtin.pacman:
+    name: "{{ wayland_utils }}"
+    state: present
+
+- name: Install fonts
+  ansible.builtin.pacman:
+    name: "{{ font_packages }}"
+    state: present
+
+- name: Install AUR fonts
+  kewlfft.aur.aur:
+    name: "{{ aur_font_packages }}"
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+
+- name: Install Ghostty terminal
+  kewlfft.aur.aur:
+    name: ghostty
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+
+- name: Update font cache
+  ansible.builtin.command: fc-cache -fv
+  changed_when: true

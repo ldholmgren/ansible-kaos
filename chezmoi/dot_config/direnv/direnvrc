@@ -1,0 +1,11 @@
+# Use nix-direnv for faster nix shell loading
+if type nix-direnv-reload > /dev/null 2>&1; then
+    source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/main/direnvrc" "sha256-HASH_PLACEHOLDER"
+fi
+
+# Fall back to flake support
+use_flake() {
+    watch_file flake.nix
+    watch_file flake.lock
+    eval "$(nix print-dev-env --profile "$(direnv_layout_dir)/flake-profile" ${1:-.})"
+}

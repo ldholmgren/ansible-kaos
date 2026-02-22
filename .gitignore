@@ -1,0 +1,34 @@
+# Ansible
+*.retry
+.vault_pass
+vault_password_file
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Ansible Galaxy roles (installed via requirements.yml)
+roles/galaxy/
+
+# Secrets
+*.secret
+*.key
+!*.pub
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nix
+result
+.direnv/

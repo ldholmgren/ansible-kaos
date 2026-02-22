@@ -1,0 +1,10 @@
+# Ignore README and license
+README.md
+LICENSE
+
+# OS-specific ignores
+{{- if ne .chezmoi.os "linux" }}
+.config/niri
+.config/DankMaterialShell
+.config/environment.d
+{{- end }}

@@ -1,0 +1,12 @@
+---
+dev_packages:
+  - git
+  - git-lfs
+  - github-cli
+  - direnv
+  - python
+  - python-pip
+  - cmake
+  - ninja
+  - meson
+  - pkg-config

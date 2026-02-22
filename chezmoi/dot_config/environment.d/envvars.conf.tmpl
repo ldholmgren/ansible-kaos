@@ -1,0 +1,23 @@
+# {{ "Managed by chezmoi" }}
+# Systemd user environment variables for Wayland
+
+# Wayland
+MOZ_ENABLE_WAYLAND=1
+QT_QPA_PLATFORM=wayland
+QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+ELECTRON_OZONE_PLATFORM_HINT=auto
+GDK_BACKEND=wayland,x11
+SDL_VIDEODRIVER=wayland
+CLUTTER_BACKEND=wayland
+_JAVA_AWT_WM_NONREPARENTING=1
+XDG_SESSION_TYPE=wayland
+XDG_CURRENT_DESKTOP=niri
+
+# SSH agent
+SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent.socket
+
+{{- if .isZBook }}
+
+# ROCm / AMD GPU
+HSA_OVERRIDE_GFX_VERSION={{ .data.hsa_override_gfx_version | default "11.5.1" }}
+{{- end }}

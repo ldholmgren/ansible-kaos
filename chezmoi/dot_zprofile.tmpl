@@ -1,0 +1,19 @@
+# {{ "Managed by chezmoi" }}
+# ~/.zprofile - sourced on login shells
+
+# ── Wayland environment ──────────────────────────────────────────────────
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export ELECTRON_OZONE_PLATFORM_HINT=auto
+export GDK_BACKEND=wayland,x11
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=niri
+
+# ── SSH agent ────────────────────────────────────────────────────────────
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+# ── Start Niri on TTY1 ──────────────────────────────────────────────────
+if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    exec niri-session
+fi

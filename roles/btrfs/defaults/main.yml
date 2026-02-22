@@ -1,0 +1,5 @@
+---
+snapper_config_name: root
+snapper_snapshot_limit: 50
+snapper_timeline_create: false
+snapper_timeline_cleanup: true

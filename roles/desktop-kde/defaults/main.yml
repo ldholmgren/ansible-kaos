@@ -1,0 +1,14 @@
+---
+kde_packages:
+  - plasma-meta
+  - sddm
+  - konsole
+  - dolphin
+  - kate
+  - ark
+  - spectacle
+  - gwenview
+  - okular
+  - kde-gtk-config
+  - breeze-gtk
+  - packagekit-qt6

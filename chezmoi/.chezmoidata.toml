@@ -1,0 +1,17 @@
+# Shared constants across all machines
+
+[fonts]
+    mono = "JetBrainsMono Nerd Font"
+    sans = "Noto Sans"
+    emoji = "Noto Color Emoji"
+    size = 13
+
+[theme]
+    gaps_inner = 8
+    gaps_outer = 8
+    border_width = 2
+    radius = 8
+
+[terminal]
+    name = "ghostty"
+    font_size = 13

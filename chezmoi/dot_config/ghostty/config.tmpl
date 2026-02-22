@@ -1,0 +1,24 @@
+# {{ "Managed by chezmoi" }}
+# Ghostty terminal configuration
+
+font-family = {{ .fonts.mono }}
+font-size = {{ .terminal.font_size }}
+
+theme = dark:catppuccin-mocha,light:catppuccin-latte
+
+window-decoration = false
+window-padding-x = 8
+window-padding-y = 8
+
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+copy-on-select = clipboard
+clipboard-paste-protection = true
+
+gtk-single-instance = true
+window-inherit-working-directory = true
+
+# Wayland-specific
+window-vsync = true

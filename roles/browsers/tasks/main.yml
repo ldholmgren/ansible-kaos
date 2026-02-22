@@ -1,0 +1,16 @@
+---
+- name: Install Zen Browser (CachyOS repo)
+  ansible.builtin.pacman:
+    name: zen-browser-bin
+    state: present
+
+- name: Install AUR browsers
+  kewlfft.aur.aur:
+    name: "{{ item }}"
+    use: "{{ aur_helper }}"
+    state: present
+  become: true
+  become_user: "{{ username }}"
+  loop:
+    - microsoft-edge-stable-bin
+    - helium-browser-bin

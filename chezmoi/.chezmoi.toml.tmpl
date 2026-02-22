@@ -1,0 +1,14 @@
+{{- $hostname := promptStringOnce . "hostname" "Hostname" -}}
+{{- $email := promptStringOnce . "email" "Email address" -}}
+{{- $gpgKeyId := promptStringOnce . "gpgKeyId" "GPG Key ID (leave empty to skip)" -}}
+{{- $displayScale := promptStringOnce . "displayScale" "Display scale factor (e.g. 1.5)" -}}
+
+[data]
+    hostname = {{ $hostname | quote }}
+    email = {{ $email | quote }}
+    gpgKeyId = {{ $gpgKeyId | quote }}
+    displayScale = {{ $displayScale }}
+    isZBook = {{ eq $hostname "zbook" }}
+
+[bitwarden]
+    unlock = "auto"

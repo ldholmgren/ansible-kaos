@@ -1,0 +1,18 @@
+---
+# bootstrap.yml - Minimal playbook for quick setup
+# Installs base system, security essentials, and chezmoi dotfiles
+
+- name: Bootstrap CachyOS workstation
+  hosts: localhost
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: base
+      tags: [base]
+
+    - role: security
+      tags: [security]
+
+    - role: chezmoi
+      tags: [chezmoi]

@@ -1,0 +1,116 @@
+---
+- name: Install CachyOS kernel
+  ansible.builtin.pacman:
+    name:
+      - "{{ cachyos_kernel }}"
+      - "{{ cachyos_kernel_headers }}"
+    state: present
+  tags: kernel
+
+- name: Configure kernel parameters in GRUB
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 nowatchdog {{ kernel_params | join(" ") }}"'
+    backup: true
+  notify: Regenerate GRUB config
+  tags: kernel
+
+- name: Install GPU packages
+  ansible.builtin.pacman:
+    name: "{{ gpu_packages }}"
+    state: present
+  tags: gpu
+
+- name: Install ROCm packages
+  ansible.builtin.pacman:
+    name: "{{ rocm_packages }}"
+    state: present
+  tags: rocm
+
+- name: Set HSA_OVERRIDE_GFX_VERSION for ROCm
+  ansible.builtin.copy:
+    content: |
+      # ROCm GFX version override for Strix Halo ({{ rocm_gfx_target }})
+      HSA_OVERRIDE_GFX_VERSION={{ hsa_override_gfx_version }}
+    dest: /etc/environment.d/rocm.conf
+    owner: root
+    group: root
+    mode: "0644"
+  tags: rocm
+
+- name: Check for NPU kernel module
+  ansible.builtin.command: modinfo {{ npu_driver_module }}
+  register: npu_modinfo
+  changed_when: false
+  failed_when: false
+  when: npu_enabled | default(false)
+  tags: npu
+
+- name: Load NPU kernel module
+  community.general.modprobe:
+    name: "{{ npu_driver_module }}"
+    state: present
+    persistent: present
+  when:
+    - npu_enabled | default(false)
+    - npu_modinfo.rc == 0
+  tags: npu
+
+- name: Warn if NPU module not available
+  ansible.builtin.debug:
+    msg: "NPU driver module '{{ npu_driver_module }}' not found. Ensure linux-firmware and a compatible kernel are installed."
+  when:
+    - npu_enabled | default(false)
+    - npu_modinfo.rc != 0
+  tags: npu
+
+- name: Check kernel version for ISP4
+  ansible.builtin.command: uname -r
+  register: kernel_version
+  changed_when: false
+  when: isp4_enabled | default(false)
+  tags: isp4
+
+- name: Notify about ISP4 webcam support
+  ansible.builtin.debug:
+    msg: >
+      ISP4 webcam driver requires kernel >= {{ isp4_min_kernel }}.
+      Current kernel: {{ kernel_version.stdout | default('unknown') }}.
+      ISP4 support will be available once the kernel requirement is met.
+  when: isp4_enabled | default(false)
+  tags: isp4
+
+- name: Configure AMD P-State
+  ansible.builtin.copy:
+    content: |
+      # AMD P-State configuration
+      GOVERNOR={{ pstate_mode | default('active') }}
+    dest: /etc/tmpfiles.d/amd-pstate.conf
+    owner: root
+    group: root
+    mode: "0644"
+  tags: power
+
+- name: Install power management tools
+  ansible.builtin.pacman:
+    name:
+      - power-profiles-daemon
+    state: present
+  tags: power
+
+- name: Enable power-profiles-daemon
+  ansible.builtin.systemd:
+    name: power-profiles-daemon
+    enabled: true
+    state: started
+  tags: power
+
+- name: Ensure AMD P-State active mode via kernel param
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="amd_pstate={{ pstate_mode | default("active") }}"'
+    backup: true
+  notify: Regenerate GRUB config
+  tags: power

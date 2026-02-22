@@ -1,0 +1,14 @@
+---
+# User configuration
+username: ldh
+user_shell: /usr/bin/zsh
+
+# AUR helper
+aur_helper: paru
+
+# Chezmoi
+chezmoi_repo_url: "https://github.com/ldh/dotfiles.git"
+chezmoi_source_dir: "{{ playbook_dir }}/../chezmoi"
+
+# KDE opt-in (default: disabled)
+install_kde: false

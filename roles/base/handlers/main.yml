@@ -1,0 +1,4 @@
+---
+- name: Update pacman database
+  ansible.builtin.pacman:
+    update_cache: true

@@ -1,0 +1,28 @@
+---
+wayland_utils:
+  - wl-clipboard
+  - cliphist
+  - grim
+  - slurp
+  - wlsunset
+  - polkit-gnome
+  - nautilus
+  - gnome-keyring
+  - seahorse
+  - network-manager-applet
+  - blueman
+  - pipewire
+  - pipewire-pulse
+  - wireplumber
+  - pavucontrol
+  - brightnessctl
+
+font_packages:
+  - ttf-jetbrains-mono-nerd
+  - ttf-firacode-nerd
+  - noto-fonts
+  - noto-fonts-emoji
+  - noto-fonts-cjk
+
+aur_font_packages:
+  - ttf-material-symbols-variable-git

@@ -1,0 +1,26 @@
+---
+# HP ZBook G1A AI 395 Max - Strix Halo (AMD Ryzen AI Max 395)
+
+# Kernel parameters
+kernel_params:
+  - amd_iommu=off
+  - amdgpu.gttsize=131072
+  - ttm.pages_limit=33554432
+
+# ROCm
+rocm_gfx_target: gfx1151
+hsa_override_gfx_version: "11.5.1"
+
+# Display
+display_scale: 1.5
+
+# NPU
+npu_enabled: true
+npu_driver_module: amdxdna
+
+# ISP4 webcam (requires kernel >= 6.18)
+isp4_enabled: true
+isp4_min_kernel: "6.18"
+
+# Power management
+pstate_mode: active

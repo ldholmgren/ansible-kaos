@@ -1,0 +1,40 @@
+# {{ ansible_managed }}
+# /etc/pacman.conf
+
+[options]
+HoldPkg     = pacman glibc
+Architecture = auto
+{% if pacman_color | default(true) %}
+Color
+{% endif %}
+CheckSpace
+VerbosePkgLists
+ParallelDownloads = {{ pacman_parallel_downloads | default(10) }}
+
+SigLevel    = Required DatabaseOptional
+LocalFileSigLevel = Optional
+
+{% if pacman_cachyos_repos | default(true) %}
+# CachyOS Repositories
+[cachyos-v4]
+Include = /etc/pacman.d/cachyos-v4-mirrorlist
+
+[cachyos-core-v4]
+Include = /etc/pacman.d/cachyos-v4-mirrorlist
+
+[cachyos-extra-v4]
+Include = /etc/pacman.d/cachyos-v4-mirrorlist
+
+[cachyos]
+Include = /etc/pacman.d/cachyos-mirrorlist
+
+{% endif %}
+# Official Arch Repositories
+[core]
+Include = /etc/pacman.d/mirrorlist
+
+[extra]
+Include = /etc/pacman.d/mirrorlist
+
+[multilib]
+Include = /etc/pacman.d/mirrorlist

@@ -1,0 +1,82 @@
+---
+- name: Configure pacman
+  ansible.builtin.template:
+    src: pacman.conf.j2
+    dest: /etc/pacman.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: Update pacman database
+
+- name: Configure makepkg
+  ansible.builtin.template:
+    src: makepkg.conf.j2
+    dest: /etc/makepkg.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+
+- name: Update pacman database
+  ansible.builtin.pacman:
+    update_cache: true
+
+- name: Install essential packages
+  ansible.builtin.pacman:
+    name: "{{ base_packages }}"
+    state: present
+
+- name: Check if paru is installed
+  ansible.builtin.command: which paru
+  register: paru_check
+  changed_when: false
+  failed_when: false
+
+- name: Install paru AUR helper
+  when: paru_check.rc != 0
+  block:
+    - name: Install paru build dependencies
+      ansible.builtin.pacman:
+        name:
+          - base-devel
+          - git
+          - rust
+        state: present
+
+    - name: Clone paru repository
+      ansible.builtin.git:
+        repo: https://aur.archlinux.org/paru-bin.git
+        dest: /tmp/paru-build
+        version: master
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Build and install paru
+      ansible.builtin.command:
+        cmd: makepkg -si --noconfirm
+        chdir: /tmp/paru-build
+      become: true
+      become_user: "{{ username }}"
+      changed_when: true
+
+    - name: Clean up paru build directory
+      ansible.builtin.file:
+        path: /tmp/paru-build
+        state: absent
+
+- name: Ensure user {{ username }} exists with correct groups
+  ansible.builtin.user:
+    name: "{{ username }}"
+    shell: "{{ user_shell }}"
+    groups: "{{ user_groups }}"
+    append: true
+    create_home: true
+
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: "{{ username }}"
+    shell: "{{ user_shell }}"
+  tags:
+    - base
+    - shell

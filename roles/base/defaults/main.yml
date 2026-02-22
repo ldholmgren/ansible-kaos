@@ -1,0 +1,31 @@
+---
+base_packages:
+  - git
+  - curl
+  - wget
+  - ripgrep
+  - fd
+  - bat
+  - eza
+  - fzf
+  - jq
+  - htop
+  - btop
+  - tmux
+  - starship
+  - tree
+  - unzip
+  - p7zip
+  - zsh
+  - zsh-completions
+  - zsh-autosuggestions
+  - zsh-syntax-highlighting
+  - man-db
+  - man-pages
+  - base-devel
+
+user_groups:
+  - wheel
+  - video
+  - render
+  - input

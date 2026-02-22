@@ -1,0 +1,32 @@
+---
+- name: Install chezmoi
+  ansible.builtin.pacman:
+    name: chezmoi
+    state: present
+
+- name: Check if chezmoi is already initialized
+  ansible.builtin.stat:
+    path: "/home/{{ username }}/.local/share/chezmoi"
+  register: chezmoi_dir
+
+- name: Initialize chezmoi from local source
+  ansible.builtin.command:
+    cmd: >
+      chezmoi init --apply
+      --source {{ chezmoi_source_dir }}
+  become: true
+  become_user: "{{ username }}"
+  when: not chezmoi_dir.stat.exists
+  changed_when: true
+  environment:
+    HOME: "/home/{{ username }}"
+
+- name: Apply chezmoi changes
+  ansible.builtin.command:
+    cmd: chezmoi apply
+  become: true
+  become_user: "{{ username }}"
+  when: chezmoi_dir.stat.exists
+  changed_when: true
+  environment:
+    HOME: "/home/{{ username }}"
