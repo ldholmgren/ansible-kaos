@@ -47,7 +47,7 @@
 - name: Configure Nix (enable flakes + nix-command)
   ansible.builtin.copy:
     content: |
-      # {{ ansible_managed }}
+      # Managed by Ansible
       experimental-features = nix-command flakes
       trusted-users = root {{ username }}
     dest: /etc/nix/nix.conf
