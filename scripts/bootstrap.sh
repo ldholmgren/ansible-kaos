@@ -6,6 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+export ANSIBLE_CONFIG="$REPO_DIR/ansible.cfg"
 
 # Colors
 RED='\033[0;31m'

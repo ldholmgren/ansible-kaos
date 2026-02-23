@@ -7,6 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+export ANSIBLE_CONFIG="$REPO_DIR/ansible.cfg"
 PLAYBOOK="${1:-site.yml}"
 shift 2>/dev/null || true
 
