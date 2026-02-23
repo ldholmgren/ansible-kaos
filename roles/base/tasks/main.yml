@@ -22,6 +22,12 @@
   ansible.builtin.pacman:
     update_cache: true
 
+- name: Remove unwanted packages
+  ansible.builtin.pacman:
+    name: "{{ removed_packages }}"
+    state: absent
+  when: removed_packages | length > 0
+
 - name: Install essential packages
   ansible.builtin.pacman:
     name: "{{ base_packages }}"

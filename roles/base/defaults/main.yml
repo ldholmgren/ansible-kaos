@@ -27,6 +27,13 @@ base_packages:
   - man-pages
   - base-devel
 
+# Packages to explicitly remove from all machines
+# Add packages here when removing them from install lists
+removed_packages: []
+# removed_packages:
+#   - some-old-package
+#   - another-unwanted-thing
+
 user_groups:
   - wheel
   - video
