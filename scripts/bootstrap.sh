@@ -92,6 +92,20 @@ if command -v nft &>/dev/null && nft list ruleset 2>/dev/null | grep -q "drop"; 
     sudo nft add rule inet filter input tcp dport 22 accept 2>/dev/null || true
 fi
 
+# Install SSH authorized keys from repo
+if [[ -d "$REPO_DIR/.ssh" ]]; then
+    log "Installing SSH authorized keys..."
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    for pubkey in "$REPO_DIR"/.ssh/*.pub; do
+        if [[ -f "$pubkey" ]] && ! grep -qf "$pubkey" "$HOME/.ssh/authorized_keys" 2>/dev/null; then
+            cat "$pubkey" >> "$HOME/.ssh/authorized_keys"
+        fi
+    done
+    chmod 600 "$HOME/.ssh/authorized_keys"
+    log "SSH keys installed"
+fi
+
 # Verify sshd is actually listening
 if ss -tlnp | grep -q ":22 "; then
     log "SSH listening on port 22"

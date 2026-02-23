@@ -18,6 +18,10 @@ roles/galaxy/
 *.key
 !*.pub
 
+# SSH private keys (keep .pub files)
+.ssh/*
+!.ssh/*.pub
+
 # IDE
 .idea/
 .vscode/
