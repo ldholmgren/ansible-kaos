@@ -76,14 +76,18 @@ sudo sed -i 's/^#\?Port .*/Port 22/' /etc/ssh/sshd_config
 sudo systemctl enable --now sshd
 sudo systemctl restart sshd
 
-# Open firewall for SSH if iptables has rules
+# Open firewall for SSH — handle firewalld, iptables, and nftables
+if systemctl is-active --quiet firewalld 2>/dev/null; then
+    log "firewalld detected, opening SSH..."
+    sudo firewall-cmd --add-service=ssh --permanent
+    sudo firewall-cmd --reload
+fi
 if iptables -L INPUT -n 2>/dev/null | grep -q "DROP\|REJECT"; then
-    log "Firewall detected, opening port 22..."
+    log "iptables rules detected, opening port 22..."
     sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
 fi
-# Also handle nftables
 if command -v nft &>/dev/null && nft list ruleset 2>/dev/null | grep -q "drop"; then
-    log "nftables detected, opening port 22..."
+    log "nftables rules detected, opening port 22..."
     sudo nft add rule inet filter input tcp dport 22 accept 2>/dev/null || true
 fi
 
