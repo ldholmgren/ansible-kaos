@@ -65,6 +65,16 @@
         path: /tmp/paru-build
         state: absent
 
+- name: Allow passwordless pacman for AUR helper
+  ansible.builtin.copy:
+    content: |
+      {{ username }} ALL=(ALL) NOPASSWD: /usr/bin/pacman
+    dest: /etc/sudoers.d/10-pacman-{{ username }}
+    owner: root
+    group: root
+    mode: "0440"
+    validate: visudo -cf %s
+
 - name: Ensure user {{ username }} exists with correct groups
   ansible.builtin.user:
     name: "{{ username }}"
