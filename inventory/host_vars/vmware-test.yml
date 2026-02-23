@@ -18,6 +18,7 @@ display_scale: 1.0
 
 # VMware doesn't expose znver4; use generic x86-64-v3
 makepkg_march: x86-64-v3
+makepkg_mtune: generic
 
 # VMware-specific packages
 vmware_packages:
