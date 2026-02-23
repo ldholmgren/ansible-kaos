@@ -1,0 +1,8 @@
+---
+# VMware VM group defaults
+
+is_vmware: true
+
+# Use standard CachyOS kernel (same as bare metal)
+cachyos_kernel: linux-cachyos
+cachyos_kernel_headers: linux-cachyos-headers

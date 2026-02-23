@@ -1,0 +1,25 @@
+---
+# VMware VM test profile
+# Usage: ansible-playbook playbooks/site.yml --limit vmware-test
+
+# VM flag
+is_vmware: true
+
+# No ZBook-specific kernel params
+kernel_params: []
+
+# Disable bare-metal hardware features
+rocm_enabled: false
+npu_enabled: false
+isp4_enabled: false
+
+# Display
+display_scale: 1.0
+
+# VMware doesn't expose znver4; use generic x86-64-v3
+makepkg_march: x86-64-v3
+
+# VMware-specific packages
+vmware_packages:
+  - open-vm-tools
+  - gtkmm3          # for open-vm-tools GUI

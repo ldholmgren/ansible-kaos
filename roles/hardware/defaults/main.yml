@@ -1,4 +1,8 @@
 ---
+# Profile flags
+is_vmware: false
+rocm_enabled: true
+
 gpu_packages:
   - mesa
   - lib32-mesa

@@ -1,4 +1,5 @@
 ---
+# ── Kernel ───────────────────────────────────────────────────────────────
 - name: Install CachyOS kernel
   ansible.builtin.pacman:
     name:
@@ -14,18 +15,23 @@
     line: 'GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 nowatchdog {{ kernel_params | join(" ") }}"'
     backup: true
   notify: Regenerate GRUB config
+  when: kernel_params | default([]) | length > 0
   tags: kernel
 
+# ── GPU ──────────────────────────────────────────────────────────────────
 - name: Install GPU packages
   ansible.builtin.pacman:
     name: "{{ gpu_packages }}"
     state: present
+  when: not (is_vmware | default(false))
   tags: gpu
 
+# ── ROCm (bare metal only) ──────────────────────────────────────────────
 - name: Install ROCm packages
   ansible.builtin.pacman:
     name: "{{ rocm_packages }}"
     state: present
+  when: rocm_enabled | default(true)
   tags: rocm
 
 - name: Set HSA_OVERRIDE_GFX_VERSION for ROCm
@@ -37,8 +43,10 @@
     owner: root
     group: root
     mode: "0644"
+  when: rocm_enabled | default(true)
   tags: rocm
 
+# ── NPU ──────────────────────────────────────────────────────────────────
 - name: Check for NPU kernel module
   ansible.builtin.command: modinfo {{ npu_driver_module }}
   register: npu_modinfo
@@ -65,6 +73,7 @@
     - npu_modinfo.rc != 0
   tags: npu
 
+# ── ISP4 ─────────────────────────────────────────────────────────────────
 - name: Check kernel version for ISP4
   ansible.builtin.command: uname -r
   register: kernel_version
@@ -81,6 +90,7 @@
   when: isp4_enabled | default(false)
   tags: isp4
 
+# ── Power management (bare metal only) ──────────────────────────────────
 - name: Configure AMD P-State
   ansible.builtin.copy:
     content: |
@@ -90,6 +100,7 @@
     owner: root
     group: root
     mode: "0644"
+  when: not (is_vmware | default(false))
   tags: power
 
 - name: Install power management tools
@@ -113,4 +124,24 @@
     line: 'GRUB_CMDLINE_LINUX="amd_pstate={{ pstate_mode | default("active") }}"'
     backup: true
   notify: Regenerate GRUB config
+  when: not (is_vmware | default(false))
   tags: power
+
+# ── VMware guest tools ──────────────────────────────────────────────────
+- name: Install VMware guest packages
+  ansible.builtin.pacman:
+    name: "{{ vmware_packages }}"
+    state: present
+  when: is_vmware | default(false)
+  tags: vmware
+
+- name: Enable VMware guest services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - vmtoolsd
+    - vmware-vmblock-fuse
+  when: is_vmware | default(false)
+  tags: vmware

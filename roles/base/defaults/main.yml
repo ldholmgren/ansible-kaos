@@ -1,4 +1,7 @@
 ---
+# makepkg compiler target (override for VMs: x86-64-v3)
+makepkg_march: znver4
+
 base_packages:
   - git
   - curl
