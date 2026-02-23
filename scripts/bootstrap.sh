@@ -32,6 +32,13 @@ fi
 
 log "Starting CachyOS provisioning..."
 
+# Enable SSH for remote access
+log "Enabling SSH..."
+sudo pacman -S --noconfirm --needed openssh
+sudo ssh-keygen -A 2>/dev/null || true
+sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sudo systemctl enable --now sshd
+
 # Install Ansible if not present
 if ! command -v ansible-playbook &>/dev/null; then
     log "Installing Ansible..."
