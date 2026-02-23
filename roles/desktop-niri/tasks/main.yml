@@ -53,15 +53,74 @@
       - ghostty-shell-integration
     state: present
 
-- name: Install SDDM display manager
-  ansible.builtin.pacman:
-    name:
-      - sddm
+- name: Install DankGreeter (greetd + DMS greeter)
+  kewlfft.aur.aur:
+    name: greetd-dms-greeter-git
+    use: "{{ aur_helper }}"
     state: present
+  become: true
+  become_user: "{{ username }}"
 
-- name: Enable SDDM
+- name: Ensure greetd config directory exists
+  ansible.builtin.file:
+    path: /etc/greetd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure greetd for DankGreeter + Niri
+  ansible.builtin.copy:
+    content: |
+      [terminal]
+      vt = 1
+
+      [default_session]
+      user = "greeter"
+      command = "dms-greeter --command niri -C /etc/greetd/niri.kdl"
+    dest: /etc/greetd/config.toml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure greeter niri session
+  ansible.builtin.copy:
+    content: |
+      hotkey-overlay {
+          skip-at-startup
+      }
+
+      environment {
+          DMS_RUN_GREETER "1"
+      }
+
+      gestures {
+          hot-corners {
+              off
+          }
+      }
+
+      layout {
+          background-color "#000000"
+      }
+    dest: /etc/greetd/niri.kdl
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Disable conflicting display managers
   ansible.builtin.systemd:
-    name: sddm
+    name: "{{ item }}"
+    enabled: false
+  loop:
+    - sddm
+    - gdm
+    - lightdm
+  failed_when: false
+
+- name: Enable greetd
+  ansible.builtin.systemd:
+    name: greetd
     enabled: true
 
 - name: Update font cache
