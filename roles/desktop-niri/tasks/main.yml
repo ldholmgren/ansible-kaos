@@ -44,6 +44,7 @@
     state: present
   become: true
   become_user: "{{ username }}"
+  when: aur_font_packages | length > 0
 
 - name: Install Ghostty terminal
   ansible.builtin.pacman:

@@ -20,9 +20,9 @@ wayland_utils:
 font_packages:
   - ttf-jetbrains-mono-nerd
   - ttf-firacode-nerd
+  - ttf-material-symbols-variable
   - noto-fonts
   - noto-fonts-emoji
   - noto-fonts-cjk
 
-aur_font_packages:
-  - ttf-material-symbols-variable-git
+aur_font_packages: []
