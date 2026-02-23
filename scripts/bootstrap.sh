@@ -76,12 +76,13 @@ sudo sed -i 's/^#\?Port .*/Port 22/' /etc/ssh/sshd_config
 sudo systemctl enable --now sshd
 sudo systemctl restart sshd
 
-# Open firewall for SSH — handle firewalld, iptables, and nftables
-if systemctl is-active --quiet firewalld 2>/dev/null; then
-    log "firewalld detected, opening SSH..."
-    sudo firewall-cmd --add-service=ssh --permanent
-    sudo firewall-cmd --reload
+# Open firewall for SSH — CachyOS uses ufw by default
+if command -v ufw &>/dev/null; then
+    log "ufw detected, allowing SSH..."
+    sudo ufw allow ssh
+    sudo ufw --force enable
 fi
+# Fallback: iptables / nftables
 if iptables -L INPUT -n 2>/dev/null | grep -q "DROP\|REJECT"; then
     log "iptables rules detected, opening port 22..."
     sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
