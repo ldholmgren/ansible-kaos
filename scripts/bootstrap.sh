@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh - One-shot provisioning for CachyOS
-# Usage: curl -fsSL <url>/bootstrap.sh | bash
-#    or: ./scripts/bootstrap.sh
+# Usage: ./scripts/bootstrap.sh [ansible-playbook args...]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,53 +11,125 @@ export ANSIBLE_CONFIG="$REPO_DIR/ansible.cfg"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 log()  { echo -e "${GREEN}[+]${NC} $*"; }
 warn() { echo -e "${YELLOW}[!]${NC} $*"; }
 err()  { echo -e "${RED}[-]${NC} $*" >&2; }
+info() { echo -e "${CYAN}[i]${NC} $*"; }
 
-# Check we're on Arch/CachyOS
+# ── Pre-flight checks ───────────────────────────────────────────────────
+
+# Must be Arch/CachyOS
 if ! command -v pacman &>/dev/null; then
     err "This script requires pacman (Arch/CachyOS)."
     exit 1
 fi
 
-# Check root
+# Don't run as root
 if [[ $EUID -eq 0 ]]; then
-    err "Do not run this script as root. It will use sudo when needed."
+    err "Do not run as root. It will use sudo when needed."
     exit 1
 fi
 
+# Check sudo works
+if ! sudo -v 2>/dev/null; then
+    err "sudo access required. Make sure your user is in the wheel group."
+    exit 1
+fi
+
+# Suppress noisy kernel messages to console
+sudo dmesg -n 1 2>/dev/null || true
+
 log "Starting CachyOS provisioning..."
 
-# Enable SSH for remote access
+# ── Network check ────────────────────────────────────────────────────────
+
+log "Checking network..."
+if ! ping -c1 -W3 archlinux.org &>/dev/null; then
+    err "No internet. Check your network connection."
+    info "IP addresses:"
+    ip -br addr show | grep -v "^lo"
+    exit 1
+fi
+log "Network OK"
+
+# ── Enable SSH ───────────────────────────────────────────────────────────
+
 log "Enabling SSH..."
 sudo pacman -S --noconfirm --needed openssh
-sudo ssh-keygen -A 2>/dev/null || true
-sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sudo systemctl enable --now sshd
 
-# Install Ansible if not present
+# Generate host keys if missing
+sudo ssh-keygen -A 2>/dev/null || true
+
+# Enable password auth (covers fresh installs and locked-down defaults)
+sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# Also check sshd_config.d drop-ins
+if ls /etc/ssh/sshd_config.d/*.conf &>/dev/null; then
+    sudo sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
+fi
+
+# Ensure sshd listens on port 22 (not overridden)
+sudo sed -i 's/^#\?Port .*/Port 22/' /etc/ssh/sshd_config
+
+sudo systemctl enable --now sshd
+sudo systemctl restart sshd
+
+# Open firewall for SSH if iptables has rules
+if iptables -L INPUT -n 2>/dev/null | grep -q "DROP\|REJECT"; then
+    log "Firewall detected, opening port 22..."
+    sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+fi
+# Also handle nftables
+if command -v nft &>/dev/null && nft list ruleset 2>/dev/null | grep -q "drop"; then
+    log "nftables detected, opening port 22..."
+    sudo nft add rule inet filter input tcp dport 22 accept 2>/dev/null || true
+fi
+
+# Verify sshd is actually listening
+if ss -tlnp | grep -q ":22 "; then
+    log "SSH listening on port 22"
+    info "SSH access: ssh $(whoami)@$(hostname -I | awk '{print $1}')"
+else
+    warn "SSH not listening on port 22 — check 'journalctl -u sshd' for errors"
+fi
+
+# ── Install Ansible ──────────────────────────────────────────────────────
+
 if ! command -v ansible-playbook &>/dev/null; then
     log "Installing Ansible..."
-    sudo pacman -Sy --noconfirm ansible
+    sudo pacman -Sy --noconfirm ansible python-passlib
 else
     log "Ansible already installed."
 fi
 
-# Install required collections
-log "Installing Ansible Galaxy dependencies..."
-ansible-galaxy collection install -r "$REPO_DIR/requirements.yml" --force
+# ── Install Galaxy collections ───────────────────────────────────────────
 
-# Auto-detect VMware and set default --limit
-LIMIT="localhost"
-if systemd-detect-virt -q 2>/dev/null && [[ "$(systemd-detect-virt)" == "vmware" ]]; then
-    LIMIT="vmware-test"
-    log "Detected VMware VM — using vmware-test profile"
+log "Installing Ansible Galaxy dependencies..."
+if ! ansible-galaxy collection install -r "$REPO_DIR/requirements.yml" --force; then
+    warn "Galaxy install failed, retrying..."
+    ansible-galaxy collection install -r "$REPO_DIR/requirements.yml" --force
 fi
 
-# Run the full site playbook
+# ── Detect environment ───────────────────────────────────────────────────
+
+LIMIT="localhost"
+VIRT=$(systemd-detect-virt 2>/dev/null || echo "none")
+
+if [[ "$VIRT" == "vmware" ]]; then
+    LIMIT="vmware-test"
+    log "Detected VMware VM — using vmware-test profile"
+elif [[ "$VIRT" != "none" ]]; then
+    info "Running in virtualized environment: $VIRT"
+fi
+
+info "Host: $(hostname)"
+info "Kernel: $(uname -r)"
+info "Profile: $LIMIT"
+
+# ── Run playbook ─────────────────────────────────────────────────────────
+
 log "Running site.yml playbook..."
 ansible-playbook "$REPO_DIR/playbooks/site.yml" \
     --limit "$LIMIT" \
