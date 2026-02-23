@@ -4,6 +4,31 @@
     name: chezmoi
     state: present
 
+- name: Ensure chezmoi config directory exists
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.config/chezmoi"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0755"
+
+- name: Pre-populate chezmoi config to avoid interactive prompts
+  ansible.builtin.copy:
+    content: |
+      [data]
+          hostname = {{ chezmoi_hostname | default(ansible_hostname) | quote }}
+          email = {{ chezmoi_email | default('') | quote }}
+          gpgKeyId = {{ chezmoi_gpg_key_id | default('') | quote }}
+          displayScale = {{ display_scale | default(1.5) }}
+          isZBook = {{ chezmoi_is_zbook | default(false) | lower }}
+
+      [bitwarden]
+          unlock = "auto"
+    dest: "/home/{{ username }}/.config/chezmoi/chezmoi.toml"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0600"
+
 - name: Check if chezmoi is already initialized
   ansible.builtin.stat:
     path: "/home/{{ username }}/.local/share/chezmoi"
