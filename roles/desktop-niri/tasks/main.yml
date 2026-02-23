@@ -11,9 +11,9 @@
     name: ccache
     state: present
 
-- name: Install DankMaterialShell (binary)
+- name: Install DankMaterialShell for Niri
   kewlfft.aur.aur:
-    name: dms-shell-bin
+    name: dms-shell-niri
     use: "{{ aur_helper }}"
     state: present
   become: true

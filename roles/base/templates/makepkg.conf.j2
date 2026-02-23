@@ -14,6 +14,9 @@ VCSCLIENTS=('bzr::breezy'
             'hg::mercurial'
             'svn::subversion')
 
+CARCH="x86_64"
+CHOST="x86_64-pc-linux-gnu"
+
 # Compiler flags (target: {{ makepkg_march | default('znver4') }})
 CFLAGS="-march={{ makepkg_march | default('znver4') }} -mtune={{ makepkg_march | default('znver4') }} -O2 -pipe -fno-plt -fexceptions \
         -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security \
