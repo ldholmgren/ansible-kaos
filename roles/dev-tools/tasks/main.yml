@@ -73,9 +73,9 @@
   environment:
     PATH: "/nix/var/nix/profiles/default/bin:{{ ansible_env.PATH }}"
 
-- name: Install Node.js
+- name: Install Node.js (LTS)
   ansible.builtin.pacman:
     name:
-      - nodejs
+      - nodejs-lts-jod
       - npm
     state: present
