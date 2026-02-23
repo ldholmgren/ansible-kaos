@@ -44,10 +44,17 @@ fi
 log "Installing Ansible Galaxy dependencies..."
 ansible-galaxy collection install -r "$REPO_DIR/requirements.yml" --force
 
+# Auto-detect VMware and set default --limit
+LIMIT="localhost"
+if systemd-detect-virt -q 2>/dev/null && [[ "$(systemd-detect-virt)" == "vmware" ]]; then
+    LIMIT="vmware-test"
+    log "Detected VMware VM — using vmware-test profile"
+fi
+
 # Run the full site playbook
 log "Running site.yml playbook..."
 ansible-playbook "$REPO_DIR/playbooks/site.yml" \
-    --ask-become-pass \
+    --limit "$LIMIT" \
     "$@"
 
 log "Provisioning complete!"

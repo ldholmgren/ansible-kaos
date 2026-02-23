@@ -5,9 +5,10 @@
 #   ansible-playbook playbooks/site.yml --tags base         # Just base
 #   ansible-playbook playbooks/site.yml --tags niri         # Desktop only
 #   ansible-playbook playbooks/site.yml --tags kde -e install_kde=true
+#   ansible-playbook playbooks/site.yml --limit vmware-test  # VM profile
 
 - name: Provision CachyOS workstation
-  hosts: localhost
+  hosts: all
   become: true
   gather_facts: true
 

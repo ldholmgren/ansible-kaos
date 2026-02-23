@@ -3,7 +3,7 @@
 # Installs base system, security essentials, and chezmoi dotfiles
 
 - name: Bootstrap CachyOS workstation
-  hosts: localhost
+  hosts: all
   become: true
   gather_facts: true
 
