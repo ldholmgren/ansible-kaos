@@ -16,9 +16,9 @@
   ansible.builtin.copy:
     content: |
       [data]
-          hostname = {{ chezmoi_hostname | default(ansible_hostname) | quote }}
-          email = {{ chezmoi_email | default('') | quote }}
-          gpgKeyId = {{ chezmoi_gpg_key_id | default('') | quote }}
+          hostname = "{{ chezmoi_hostname | default(ansible_hostname) }}"
+          email = "{{ chezmoi_email | default('') }}"
+          gpgKeyId = "{{ chezmoi_gpg_key_id | default('') }}"
           displayScale = {{ display_scale | default(1.5) }}
           isZBook = {{ chezmoi_is_zbook | default(false) | lower }}
 
