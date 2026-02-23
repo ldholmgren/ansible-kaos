@@ -3,18 +3,11 @@
   ansible.builtin.pacman:
     name:
       - bitwarden
+      - bitwarden-cli
       - openssh
       - gnupg
       - pinentry
     state: present
-
-- name: Install Bitwarden CLI
-  kewlfft.aur.aur:
-    name: bitwarden-cli
-    use: "{{ aur_helper }}"
-    state: present
-  become: true
-  become_user: "{{ username }}"
 
 - name: Ensure SSH directory exists
   ansible.builtin.file:
@@ -24,29 +17,18 @@
     group: "{{ username }}"
     mode: "0700"
 
-- name: Generate SSH key if not present
-  community.crypto.openssh_keypair:
+- name: Check if SSH key exists
+  ansible.builtin.stat:
     path: "/home/{{ username }}/.ssh/id_ed25519"
-    type: ed25519
-    comment: "{{ username }}@{{ ansible_hostname }}"
-    owner: "{{ username }}"
-    group: "{{ username }}"
+  register: ssh_key_stat
+
+- name: Generate SSH key if not present
+  ansible.builtin.command:
+    cmd: ssh-keygen -t ed25519 -f /home/{{ username }}/.ssh/id_ed25519 -N "" -C "{{ username }}@{{ ansible_hostname }}"
   become: true
   become_user: "{{ username }}"
-  register: ssh_key
-
-- name: Display SSH public key
-  ansible.builtin.debug:
-    msg: "SSH public key: {{ ssh_key.public_key }}"
-  when: ssh_key.changed
-
-- name: Configure ssh-agent systemd user service
-  ansible.builtin.template:
-    src: ssh-agent.service.j2
-    dest: "/home/{{ username }}/.config/systemd/user/ssh-agent.service"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: "0644"
+  when: not ssh_key_stat.stat.exists
+  changed_when: true
 
 - name: Ensure systemd user directory exists
   ansible.builtin.file:
@@ -56,6 +38,14 @@
     group: "{{ username }}"
     mode: "0755"
 
+- name: Configure ssh-agent systemd user service
+  ansible.builtin.template:
+    src: ssh-agent.service.j2
+    dest: "/home/{{ username }}/.config/systemd/user/ssh-agent.service"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+
 - name: Enable ssh-agent user service
   ansible.builtin.systemd:
     name: ssh-agent
@@ -64,6 +54,14 @@
     scope: user
   become: true
   become_user: "{{ username }}"
+
+- name: Ensure GPG directory exists
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.gnupg"
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0700"
 
 - name: Configure GPG agent
   ansible.builtin.copy:
@@ -76,11 +74,3 @@
     owner: "{{ username }}"
     group: "{{ username }}"
     mode: "0600"
-
-- name: Ensure GPG directory exists
-  ansible.builtin.file:
-    path: "/home/{{ username }}/.gnupg"
-    state: directory
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: "0700"

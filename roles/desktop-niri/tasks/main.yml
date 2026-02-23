@@ -6,9 +6,9 @@
       - xwayland-satellite
     state: present
 
-- name: Install DankMaterialShell
+- name: Install DankMaterialShell for Niri
   kewlfft.aur.aur:
-    name: dankmaterialshell
+    name: dms-shell-niri
     use: "{{ aur_helper }}"
     state: present
   become: true
@@ -41,12 +41,11 @@
   become_user: "{{ username }}"
 
 - name: Install Ghostty terminal
-  kewlfft.aur.aur:
-    name: ghostty
-    use: "{{ aur_helper }}"
+  ansible.builtin.pacman:
+    name:
+      - ghostty
+      - ghostty-shell-integration
     state: present
-  become: true
-  become_user: "{{ username }}"
 
 - name: Update font cache
   ansible.builtin.command: fc-cache -fv

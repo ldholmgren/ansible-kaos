@@ -62,13 +62,16 @@
     enabled: true
     state: started
 
-- name: Install nix-direnv
-  kewlfft.aur.aur:
-    name: nix-direnv
-    use: "{{ aur_helper }}"
-    state: present
+- name: Install nix-direnv via nix
+  ansible.builtin.command:
+    cmd: nix profile install nixpkgs#nix-direnv
   become: true
   become_user: "{{ username }}"
+  register: nix_direnv_install
+  changed_when: "'installed' in nix_direnv_install.stdout | default('')"
+  failed_when: false
+  environment:
+    PATH: "/nix/var/nix/profiles/default/bin:{{ ansible_env.PATH }}"
 
 - name: Install Node.js
   ansible.builtin.pacman:
