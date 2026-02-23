@@ -7,7 +7,7 @@
     hostname = {{ $hostname | quote }}
     email = {{ $email | quote }}
     gpgKeyId = {{ $gpgKeyId | quote }}
-    displayScale = {{ $displayScale }}
+    displayScale = {{ $displayScale | quote }}
     isZBook = {{ eq $hostname "zbook" }}
 
 [bitwarden]

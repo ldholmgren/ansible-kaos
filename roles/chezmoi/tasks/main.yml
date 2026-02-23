@@ -19,7 +19,7 @@
           hostname = "{{ chezmoi_hostname | default(ansible_hostname) }}"
           email = "{{ chezmoi_email | default('') }}"
           gpgKeyId = "{{ chezmoi_gpg_key_id | default('') }}"
-          displayScale = {{ display_scale | default(1.5) }}
+          displayScale = "{{ display_scale | default(1.5) }}"
           isZBook = {{ chezmoi_is_zbook | default(false) | lower }}
 
       [bitwarden]
