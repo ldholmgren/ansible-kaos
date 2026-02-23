@@ -53,6 +53,17 @@
       - ghostty-shell-integration
     state: present
 
+- name: Install SDDM display manager
+  ansible.builtin.pacman:
+    name:
+      - sddm
+    state: present
+
+- name: Enable SDDM
+  ansible.builtin.systemd:
+    name: sddm
+    enabled: true
+
 - name: Update font cache
   ansible.builtin.command: fc-cache -fv
   changed_when: true
