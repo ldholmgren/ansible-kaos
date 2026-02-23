@@ -1,4 +1,20 @@
 ---
+- name: Disable faillock account lockout
+  ansible.builtin.copy:
+    content: |
+      # Managed by Ansible - disable account lockout
+      # deny=0 means never lock accounts
+      deny=0
+    dest: /etc/security/faillock.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reset any existing account locks
+  ansible.builtin.command: faillock --user {{ username }} --reset
+  changed_when: false
+  failed_when: false
+
 - name: Install security packages
   ansible.builtin.pacman:
     name:
