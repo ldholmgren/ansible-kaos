@@ -6,9 +6,14 @@
       - xwayland-satellite
     state: present
 
-- name: Install DankMaterialShell for Niri
+- name: Install ccache for AUR builds
+  ansible.builtin.pacman:
+    name: ccache
+    state: present
+
+- name: Install DankMaterialShell (binary)
   kewlfft.aur.aur:
-    name: dms-shell-niri
+    name: dms-shell-bin
     use: "{{ aur_helper }}"
     state: present
   become: true
